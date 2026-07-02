@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ignored per user request
+CLAUDE.md
+AGENTS.md
+cognee-onto/

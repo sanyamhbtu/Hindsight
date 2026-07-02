@@ -76,18 +76,18 @@ The project requires the following keys in the `.env` file to function. **Do not
 ```env
 # Neon Postgres Database (Ready for future auth/state storage)
 DB_PROVIDER="postgres"
-DB_HOST="npg_Uzkgxf8G4oPm@ep-bitter-sun-atjbiiyf-pooler.c-9.us-east-1.aws.neon.tech"
+DB_HOST="YOUR_NEON_DB_HOST"
 DB_PORT="5432"
-DB_USERNAME="Hindsight"
-DB_PASSWORD="npg_Uzkgxf8G4oPm"
+DB_USERNAME="YOUR_DB_USERNAME"
+DB_PASSWORD="YOUR_DB_PASSWORD"
 DB_NAME="neondb"
 
 # Cognee Cloud Engine Credentials (Required for all core RAG/Graph features)
 # These MUST match the specific AWS tenant provided by Cognee
-COGNEE_API_URL="https://tenant-7fb4c266-ceb0-4afc-b48d-d586bdefff8b.aws.cognee.ai/api/v1"
-COGNEE_TENANT_ID="7fb4c266-ceb0-4afc-b48d-d586bdefff8b"
-COGNEE_USER_ID="c4d9bf9d-d5d3-4e4a-9b11-88f23802bba2"
-COGNEE_API_KEY="8466cda73bacb374ff6c0534549acf30093f30f3695b383078d554e7f1c30cb0"
+COGNEE_API_URL="https://YOUR_TENANT.aws.cognee.ai/api/v1"
+COGNEE_TENANT_ID="YOUR_TENANT_ID"
+COGNEE_USER_ID="YOUR_USER_ID"
+COGNEE_API_KEY="YOUR_API_KEY"
 
 # Optional: For web-scraping features if implemented in the future
 ONTO_API_KEY="your_onto_api_key"
