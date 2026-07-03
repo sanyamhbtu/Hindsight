@@ -65,7 +65,7 @@ Because the standard `cognee-vercel-ai-sdk` had routing bugs, all external calls
 *   **SEARCH:** `POST {COGNEE_API_URL}/search` -> Runs queries against the dataset. We pass specific `searchType` enums:
     *   `CHUNKS` -> Returns raw text pieces (Vector RAG).
     *   `GRAPH_COMPLETION` -> Returns the synthesized Graph RAG answer.
-    *   `SUMMARIES` -> Returns broad dataset overviews (mapped from the UI's "Wolf Pack" mode).
+    *   `GRAPH_SUMMARY_COMPLETION` -> Returns broad dataset overviews (mapped from the UI's "Wolf Pack" mode).
 *   **GRAPH DATA:** `GET {COGNEE_API_URL}/datasets/{datasetId}/graph` -> Returns `{ nodes: [], edges: [] }`.
 
 ---

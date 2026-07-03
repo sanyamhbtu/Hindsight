@@ -58,7 +58,7 @@ Hindsight heavily utilizes the **Cognee SDK** to manage memory states:
 | `cognify()` | Triggers the knowledge graph construction (extracting entities/relationships). |
 | `search(GRAPH_COMPLETION)` | Performs multi-hop traversal to provide the synthesized "Hindsight" answer. |
 | `search(CHUNKS)` | Retrieves raw vector embeddings for the "dumb" Hangover AI comparison. |
-| `search(SUMMARIES)` | Triggers the Wolf Pack mode for broad dataset understanding. |
+| `search(GRAPH_SUMMARY_COMPLETION)` | Triggers the Wolf Pack mode for broad dataset understanding. |
 | `api/graph` (Custom) | Fetches raw nodes and edges for rendering the interactive Memory Board and Dashboard. |
 
 ---

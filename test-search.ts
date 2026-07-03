@@ -5,14 +5,16 @@ config();
 
 async function testSearch() {
   try {
-    const dataset = "detective"; // Or whatever dataset exists
-    console.log("Searching GRAPH_COMPLETION...");
-    const gRes = await search(dataset, "Where was Doug last seen?", "GRAPH_COMPLETION");
-    console.log("Graph:", gRes);
+    const dataset = "detective_core"; // The default dataset name
+    const query = "Where is Doug?";
     
-    console.log("Searching RAG_COMPLETION...");
-    const rRes = await search(dataset, "Where was Doug last seen?", "RAG_COMPLETION");
-    console.log("RAG:", rRes);
+    console.log("Searching GRAPH_COMPLETION...");
+    const gRes = await search(dataset, query, "GRAPH_COMPLETION");
+    console.log("Graph:", JSON.stringify(gRes, null, 2));
+    
+    console.log("\nSearching GRAPH_COMPLETION_CONTEXT_EXTENSION...");
+    const rRes = await search(dataset, query, "GRAPH_COMPLETION_CONTEXT_EXTENSION");
+    console.log("Extended Graph:", JSON.stringify(rRes, null, 2));
   } catch (err) {
     console.error(err);
   }

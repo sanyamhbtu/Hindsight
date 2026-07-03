@@ -4,15 +4,24 @@ import { DETECTIVE_SYSTEM_PROMPT } from "@/lib/detective/fragments";
 
 const PROMPTS: any = {
   GRAPH_COMPLETION: DETECTIVE_SYSTEM_PROMPT,
-  GRAPH_COMPLETION_COT: `You are a meticulous investigator. Think step by step.
-    Question each assumption. Show your work. If you find a contradiction, call it out.
-    The goal is to find Doug Billings. Every clue matters.`,
-  SUMMARIES: `Summarize the evidence as a detective's case briefing. 
-    Bullet points. What we know. What we don't. Who was where when.`,
   CHUNKS: undefined,
-  INSIGHTS: undefined,
-  FEELING_LUCKY: DETECTIVE_SYSTEM_PROMPT
+  INSIGHTS: undefined
 };
+
+// Handle varied triplet response shapes from Cognee
+function normalizeInsights(raw: any[]): any[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(item => {
+    if (typeof item === 'string') {
+      return { subject: 'Unknown', relation: 'CONNECTED_TO', object: 'Unknown' };
+    }
+    return {
+      subject: item.subject || item.node_from || item.source || 'Unknown',
+      relation: item.relation || item.edge_type || item.predicate || 'CONNECTED_TO',
+      object: item.object || item.node_to || item.target || 'Unknown'
+    };
+  }).filter(t => t.subject !== 'Unknown' && t.object !== 'Unknown');
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -54,30 +63,28 @@ export async function POST(req: NextRequest) {
       return "No data found.";
     };
 
-    let actualSearchType = searchType;
-    if (searchType === "FEELING_LUCKY") {
-      actualSearchType = "SUMMARIES";
-    }
+    const activeSearchType = searchType === 'TEMPORAL' ? 'TEMPORAL' : 'GRAPH_COMPLETION_CONTEXT_EXTENSION';
 
     // Parallel searches
     const [graphResults, chunksResults, insightsResults] = await Promise.all([
-      search(dataset, question, actualSearchType, { 
+      search(dataset, question, activeSearchType, { 
         topK: 5, 
-        systemPrompt: PROMPTS[actualSearchType] 
-      }).catch(() => []),
-      search(dataset, question, "CHUNKS", { topK: 3 }).catch(() => []),
-      search(dataset, question, "INSIGHTS", { topK: 15 }).catch(() => [])
+        systemPrompt: PROMPTS["GRAPH_COMPLETION"],
+        save_interaction: true 
+      }).catch((e) => { console.warn(`${activeSearchType} search failed:`, e); return []; }),
+      search(dataset, question, "CHUNKS", { topK: 3 }).catch((e) => { console.warn("CHUNKS search failed:", e); return []; }),
+      search(dataset, question, "INSIGHTS", { topK: 15, save_interaction: true }).catch((e) => { console.warn("INSIGHTS search failed:", e); return []; })
     ]);
     
     const graphAnswer = extractAnswer(graphResults);
     const chunksAnswer = extractAnswer(chunksResults, true);
 
-    // Option A Traversal Trail extraction
+    const normalizedInsights = normalizeInsights(insightsResults);
+
     let trail: any[] = [];
-    if (Array.isArray(insightsResults)) {
-      trail = insightsResults
+    if (normalizedInsights.length > 0) {
+      trail = normalizedInsights
         .filter((triplet: any) => {
-          if (typeof triplet === 'string') return false; // Not a triplet
           const sub = (triplet.subject || "").toLowerCase();
           const obj = (triplet.object || "").toLowerCase();
           const ans = graphAnswer.toLowerCase();
@@ -86,9 +93,20 @@ export async function POST(req: NextRequest) {
         .slice(0, 5); // max 5 hops
     }
 
+    // Call out to session memory to persist interaction
+    const protocol = req.headers.get("x-forwarded-proto") || "http";
+    const host = req.headers.get("host");
+    const sessionId = "detective_session_1"; // Default for demo
+    
+    fetch(`${protocol}://${host}/api/session/remember`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, answer: graphAnswer, sessionId })
+    }).catch(e => console.error("Session remember failed", e)); // Fire and forget
+
     return NextResponse.json({
       vector: { answer: chunksAnswer },
-      graph: { answer: graphAnswer, trail, insights: insightsResults, searchTypeUsed: actualSearchType },
+      graph: { answer: graphAnswer, trail, insights: normalizedInsights, searchTypeUsed: activeSearchType },
       raw: { graphResults, chunksResults }
     });
   } catch (error: any) {

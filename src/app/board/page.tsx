@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import EvidenceBoard, { GraphNode, GraphEdge } from "@/components/EvidenceBoard";
+import type { GraphNode, GraphEdge } from "@/components/EvidenceBoard";
+import dynamic from 'next/dynamic';
+
+const EvidenceBoard = dynamic(() => import('@/components/EvidenceBoard'), { 
+  ssr: false,
+  loading: () => <div>Loading graph...</div>
+});
 import MemoryControls from "@/components/MemoryControls";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";

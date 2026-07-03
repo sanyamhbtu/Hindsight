@@ -11,12 +11,21 @@ export async function POST(req: NextRequest) {
     const processedData = await Promise.all(
       sources.map(async (src: any) => {
         if (src.type === "url") {
-          const ontoData = await readAndScore(src.content);
-          return {
-            content: ontoData.markdown,
-            trust: ontoData.trust_score,
-            source: src.content
-          };
+          try {
+            const ontoData = await readAndScore(src.content);
+            return {
+              content: ontoData.markdown || `Fallback content for ${src.content}`,
+              trust: ontoData.trust_score || 50,
+              source: src.content
+            };
+          } catch (err) {
+            console.warn(`Failed to process URL ${src.content}:`, err);
+            return {
+              content: `Failed to fetch or parse content from ${src.content}`,
+              trust: 50,
+              source: src.content
+            };
+          }
         }
         return src;
       })
@@ -29,10 +38,15 @@ export async function POST(req: NextRequest) {
     const customPrompt = mode === 'detective' ? DETECTIVE_EXTRACTION_PROMPT : undefined;
     
     // We already wrapped this in fire-and-forget in client.ts
-    // with runInBackground = true
+    // with run_in_background = true
     cognify(dataset, true, customPrompt);
 
-    return NextResponse.json({ success: true, status: 'processing' });
+    return NextResponse.json({ 
+      success: true, 
+      status: 'processing',
+      datasetName: dataset,
+      message: 'Evidence received. Cognee is building the graph...'
+    }, { status: 202 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

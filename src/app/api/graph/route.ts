@@ -6,7 +6,13 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const dataset = url.searchParams.get("dataset") || "detective_core";
     
-    const rawGraph = await getDatasetGraph(dataset);
+    let rawGraph;
+    try {
+      rawGraph = await getDatasetGraph(dataset);
+    } catch (error) {
+      console.warn("Graph API: Failed to get dataset graph, returning empty graph.", error);
+      rawGraph = { nodes: [], edges: [] };
+    }
 
     // Transform raw graph for the EvidenceBoard UI
     const nodes = (rawGraph.nodes || []).map((node: any) => {

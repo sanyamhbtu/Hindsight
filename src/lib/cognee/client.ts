@@ -1,4 +1,5 @@
 import { createCogneeClient } from "cognee-vercel-ai-sdk";
+import { getDatasetId } from "./datasetCache";
 
 // Helper for raw REST calls not covered by the SDK (like graph fetching, datasets list, deletion)
 export const getApiUrl = () => process.env.COGNEE_API_URL || "https://api.cognee.ai/api/v1";
@@ -12,9 +13,6 @@ export function getHeaders(isFormData: boolean = false) {
     headers["Content-Type"] = "application/json";
   }
 
-  if (process.env.COGNEE_TENANT_ID) {
-    headers["Tenant-Id"] = process.env.COGNEE_TENANT_ID; 
-  }
   
   if (process.env.COGNEE_USER_ID) {
     headers["User-Id"] = process.env.COGNEE_USER_ID; 
@@ -61,7 +59,8 @@ export async function addData(datasetId: string, data: any[]) {
 export async function cognify(datasetId: string, runInBackground: boolean = false, customPrompt?: string) {
   const payload: any = {
     datasets: [datasetId],
-    runInBackground
+    run_in_background: runInBackground,
+    temporal_cognify: true
   };
   if (customPrompt) payload.customPrompt = customPrompt;
   
@@ -82,17 +81,7 @@ export async function cognify(datasetId: string, runInBackground: boolean = fals
 }
 
 export async function getDatasetGraph(datasetId: string) {
-  let uuid = datasetId;
-  try {
-    const dRes = await fetch(`${getApiUrl()}/datasets`, { headers: getHeaders() });
-    if (dRes.ok) {
-      const datasets = await dRes.json();
-      const ds = datasets.find((d: any) => d.name === datasetId);
-      if (ds) uuid = ds.id;
-    }
-  } catch (e) {
-    console.error("Failed to resolve dataset ID", e);
-  }
+  let uuid = await getDatasetId(datasetId) || datasetId;
 
   const res = await fetch(`${getApiUrl()}/datasets/${uuid}/graph`, {
     headers: getHeaders(),
@@ -105,10 +94,16 @@ export async function search(datasetId: string, query: string, searchType: strin
   const payload: any = {
     query,
     datasets: [datasetId],
-    searchType,
+    search_type: searchType,
     topK: options.topK || 5,
+    ...options
   };
-  if (options.systemPrompt) payload.systemPrompt = options.systemPrompt;
+  if (options.systemPrompt) {
+    payload.system_prompt = options.systemPrompt;
+    delete payload.systemPrompt;
+  }
+  delete payload.topK; // we already mapped it, but let's keep it as is since topK is set
+  payload.topK = options.topK || 5;
   
   const res = await fetch(`${getApiUrl()}/search`, {
     method: "POST",
@@ -121,17 +116,7 @@ export async function search(datasetId: string, query: string, searchType: strin
 }
 
 export async function deleteDataset(datasetId: string) {
-  let uuid = datasetId;
-  try {
-    const dRes = await fetch(`${getApiUrl()}/datasets`, { headers: getHeaders() });
-    if (dRes.ok) {
-      const datasets = await dRes.json();
-      const ds = datasets.find((d: any) => d.name === datasetId);
-      if (ds) uuid = ds.id;
-    }
-  } catch (e) {
-    console.error("Failed to resolve dataset ID", e);
-  }
+  let uuid = await getDatasetId(datasetId) || datasetId;
 
   const res = await fetch(`${getApiUrl()}/datasets/${uuid}`, {
     method: "DELETE",

@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Play } from "lucide-react";
 import TraversalTrail, { TrailStep } from "@/components/TraversalTrail";
+import TemporalTimeline from "@/components/TemporalTimeline";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDatasetSession } from "@/hooks/useDatasetSession";
 
@@ -20,27 +21,49 @@ function AskPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { datasetName } = useDatasetSession();
-  const query = searchParams.get("q") || "";
+  const [searchMode, setSearchMode] = useState<'GRAPH_COMPLETION' | 'GRAPH_COMPLETION_COT' | 'GRAPH_SUMMARY_COMPLETION' | 'TEMPORAL'>('GRAPH_COMPLETION');
+  const query = searchMode === 'TEMPORAL' ? "What happened after 2am on the night Doug disappeared?" : (searchParams.get("q") || "");
 
   const [loading, setLoading] = useState(true);
   const [ragAnswer, setRagAnswer] = useState("");
   const [graphAnswer, setGraphAnswer] = useState("");
+  const [rawContext, setRawContext] = useState("");
   const [trail, setTrail] = useState<TrailStep[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
-  const [searchMode, setSearchMode] = useState<'GRAPH_COMPLETION' | 'GRAPH_COMPLETION_COT' | 'FEELING_LUCKY'>('GRAPH_COMPLETION');
   const [autoSelectedMode, setAutoSelectedMode] = useState<string | null>(null);
 
   const fetchAnswers = async () => {
     if (!datasetName) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: query, datasetName, searchType: searchMode })
-      });
+      let endpoint = "/api/ask";
+      if (searchMode === 'GRAPH_COMPLETION_COT') {
+        endpoint = "/api/ask-deep";
+      } else if (searchMode === 'GRAPH_SUMMARY_COMPLETION') {
+        endpoint = "/api/recall";
+      }
+
+      const [res, contextRes] = await Promise.all([
+        fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: query, datasetName, searchType: searchMode })
+        }),
+        fetch("/api/ask-context", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: query, datasetName })
+        })
+      ]);
       
+      if (contextRes.ok) {
+        const cData = await contextRes.json();
+        setRawContext(cData.context || "No context found.");
+      } else {
+        setRawContext("Error fetching context.");
+      }
+
       if (res.ok) {
         const data = await res.json();
         setRagAnswer(data.vector?.answer || "No RAG response.");
@@ -72,7 +95,7 @@ function AskPageContent() {
           setTrail(enrichedTrail);
         }
 
-        if (searchMode === 'FEELING_LUCKY') {
+        if (searchMode === 'GRAPH_SUMMARY_COMPLETION') {
           setAutoSelectedMode(data.graph?.searchTypeUsed || "GRAPH_COMPLETION");
         } else {
           setAutoSelectedMode(null);
@@ -89,10 +112,12 @@ function AskPageContent() {
       } else {
         setRagAnswer("Error contacting server.");
         setGraphAnswer("Error contacting server.");
+        setRawContext("Error contacting server.");
       }
     } catch (error) {
       setRagAnswer("Search failed.");
       setGraphAnswer("Search failed.");
+      setRawContext("Search failed.");
     } finally {
       setLoading(false);
     }
@@ -111,6 +136,7 @@ function AskPageContent() {
   const handleReplay = () => {
     setGraphAnswer("");
     setRagAnswer("");
+    setRawContext("");
     setTrail([]);
     setReplayKey(prev => prev + 1);
   };
@@ -161,15 +187,23 @@ function AskPageContent() {
             🧠 DEEP REASONING
           </button>
           <button
-            onClick={() => setSearchMode('FEELING_LUCKY')}
+            onClick={() => setSearchMode('GRAPH_SUMMARY_COMPLETION')}
             className={`px-4 py-1.5 font-heading text-sm tracking-widest transition-all flex items-center gap-2 ${
-              searchMode === 'FEELING_LUCKY' ? 'bg-[#F5EDD4] text-[#1A1108]' : 'text-[#8B6914] hover:text-[#F5C842]'
+              searchMode === 'GRAPH_SUMMARY_COMPLETION' ? 'bg-[#F5EDD4] text-[#1A1108]' : 'text-[#8B6914] hover:text-[#F5C842]'
             }`}
           >
             🎲 WOLF PACK
           </button>
+          <button
+            onClick={() => setSearchMode('TEMPORAL')}
+            className={`px-4 py-1.5 font-heading text-sm tracking-widest transition-all flex items-center gap-2 ${
+              searchMode === 'TEMPORAL' ? 'bg-[#F5EDD4] text-[#1A1108]' : 'text-[#8B6914] hover:text-[#F5C842]'
+            }`}
+          >
+            ⏱️ TIMELINE
+          </button>
         </div>
-        {searchMode === 'FEELING_LUCKY' && autoSelectedMode && (
+        {searchMode === 'GRAPH_SUMMARY_COMPLETION' && autoSelectedMode && (
           <div className="relative z-10 mt-3 text-xs font-mono text-[#8B6914] bg-[#2C1F0E] px-3 py-1 rounded">
             The Wolf Pack doesn't plan. Cognee chose: {autoSelectedMode}
           </div>
@@ -205,26 +239,51 @@ function AskPageContent() {
           </div>
         </div>
 
+        {/* Middle Panel: Context */}
+        <div className="flex-1 border-r border-[#2C1F0E] p-8 flex flex-col relative overflow-hidden">
+          <h2 className="font-heading text-3xl text-[#38bdf8]/80 mb-6 flex items-center gap-3">
+            <span className="text-4xl opacity-50">📂</span> 
+            RAW GRAPH CONTEXT
+            <span className="text-[10px] font-mono tracking-widest ml-auto opacity-50 uppercase border border-[#38bdf8]/30 px-2 py-1 rounded">What Cognee fed to the LLM</span>
+          </h2>
+          <div className="bg-[#2C1F0E]/20 p-6 rounded-sm flex-1 border border-[#2C1F0E]/40 relative font-mono text-xs text-[#38bdf8]/70 whitespace-pre-wrap overflow-y-auto">
+            {rawContext ? (
+               rawContext
+            ) : (
+               <div className="flex items-center gap-3 text-[#38bdf8]/50 h-full justify-center">
+                 <Loader2 className="w-5 h-5 animate-spin" />
+                 <span>Fetching context...</span>
+               </div>
+            )}
+          </div>
+        </div>
+
         {/* Right Panel: Graph */}
-        <div className="flex-1 p-8 flex flex-col relative">
+        <div className="flex-[1.2] p-8 flex flex-col relative overflow-hidden">
           <h2 className="font-heading text-3xl text-[#F5C842] mb-6 flex items-center gap-3">
             <span className="text-4xl">🧠</span> 
             HINDSIGHT
             <span className="text-xs font-mono tracking-widest ml-auto text-[#F5C842] border border-[#F5C842]/30 px-2 py-1 rounded">Graph Completion</span>
           </h2>
 
-          <div className="bg-[#0D0D0D]/80 p-8 rounded-sm flex-1 border-2 border-[#F5C842]/50 shadow-[0_0_30px_rgba(245,200,66,0.1)] relative flex flex-col">
+          <div className="bg-[#0D0D0D]/80 p-8 rounded-sm flex-1 border-2 border-[#F5C842]/50 shadow-[0_0_30px_rgba(245,200,66,0.1)] relative flex flex-col overflow-y-auto">
             {graphAnswer ? (
               <>
-                <motion.p 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-[#F5EDD4] font-body text-xl leading-relaxed mb-auto"
-                >
-                  {renderMarkdown(graphAnswer)}
-                </motion.p>
-                {trail.length > 0 && <TraversalTrail trail={trail} />}
+                {searchMode === 'TEMPORAL' ? (
+                  <TemporalTimeline answerText={graphAnswer} />
+                ) : (
+                  <>
+                    <motion.p 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="text-[#F5EDD4] font-body text-xl leading-relaxed mb-auto"
+                    >
+                      {renderMarkdown(graphAnswer)}
+                    </motion.p>
+                    {trail.length > 0 && <TraversalTrail trail={trail} />}
+                  </>
+                )}
               </>
             ) : (
               <div className="flex items-center gap-3 text-[#F5C842] h-full justify-center">
