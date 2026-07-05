@@ -46,7 +46,7 @@ const CONTENT = {
     { label: "Two modes", href: "#modes" },
     { label: "The proof", href: "#proof" },
     { label: "Open source", href: "#opensource" },
-    { label: "GitHub ↗", href: "https://github.com/ravixalgorithm/Hindsight", external: true },
+    { label: "GitHub ↗", href: "https://github.com/ravixalgorithm/Chow", external: true },
     { label: "Cognee ↗", href: "https://www.cognee.ai", external: true },
   ],
   badge: "Graph memory, reconstructed",
@@ -56,7 +56,7 @@ const CONTENT = {
   runLocallyNote:
     "This runs on a self-hosted Cognee engine, not a hosted cloud API — the box below only works when you've cloned the repo and started it yourself.",
   runLocallyCta: "Get the code + setup ↗",
-  runLocallyHref: "https://github.com/ravixalgorithm/Hindsight",
+  runLocallyHref: "https://github.com/ravixalgorithm/Chow",
   inputPlaceholder: "Paste evidence, drop a file, or a URL…",
   panelBadge: "Powered by Cognee",
   sequence: [

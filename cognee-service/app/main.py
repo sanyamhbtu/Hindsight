@@ -1,4 +1,4 @@
-"""Self-hosted Cognee service for Hindsight.
+"""Self-hosted Cognee service for Chow.
 
 Wraps the real, self-hosted `cognee` OSS package (not Cognee Cloud) behind a
 REST contract that mirrors what src/lib/cognee/client.ts already calls, so
@@ -35,9 +35,9 @@ from app.ontology import ROOT_GRAPH_MODEL
 from app.tasks import build_onto_intake_pipeline
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("hindsight.cognee-service")
+logger = logging.getLogger("chow.cognee-service")
 
-app = FastAPI(title="Hindsight Cognee Service (self-hosted OSS)")
+app = FastAPI(title="Chow Cognee Service (self-hosted OSS)")
 
 # In-memory dataset name registry. We don't rely on Cognee's internal
 # dataset-UUID scheme — our "id" is just the dataset name — so the
@@ -54,7 +54,7 @@ def _remember_dataset(name: str) -> None:
 # plain sqlite file next to Cognee's own system dir. Keeps the "own your
 # whole stack" story true: no external Postgres account needed just to
 # remember what was asked in a past session.
-_SESSION_DB_PATH = Path(__file__).resolve().parent.parent / "hindsight_sessions.db"
+_SESSION_DB_PATH = Path(__file__).resolve().parent.parent / "chow_sessions.db"
 
 
 def _session_db() -> sqlite3.Connection:

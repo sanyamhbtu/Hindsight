@@ -1,7 +1,7 @@
 # cognee-service
 
 The real, self-hosted, open-source `cognee` package (`topoteretes/cognee` on
-PyPI/GitHub) running as its own process — not Cognee Cloud. Hindsight's
+PyPI/GitHub) running as its own process — not Cognee Cloud. Chow's
 Next.js app talks to it over HTTP exactly like it used to talk to Cloud
 (`add` / `cognify` / `search` / `datasets/{id}/graph` / `memify`), so
 switching engines is a URL change (`COGNEE_MODE` in the app's `.env.local`),

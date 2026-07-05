@@ -66,9 +66,9 @@ runs end to end in a sandbox or CI environment with zero configuration.
 # From PyPI, once published:
 pip install cognee-onto
 
-# From the Hindsight monorepo directly (subdirectory install — this is
+# From the Chow monorepo directly (subdirectory install — this is
 # where the package actually lives today):
-pip install "git+https://github.com/ravixalgorithm/Hindsight.git#subdirectory=cognee-onto"
+pip install "git+https://github.com/ravixalgorithm/Chow.git#subdirectory=cognee-onto"
 ```
 
 ## Quick start
@@ -110,7 +110,7 @@ you can query like anything else in Cognee.
 - **Any Cognee pipeline that touches the open web** — anywhere `cognee.add()`
   would otherwise ingest raw HTML, this Task slots in ahead of it.
 
-`cognee-onto` is dogfooded by [Hindsight](https://github.com/ravixalgorithm/Hindsight)'s
+`cognee-onto` is dogfooded by [Chow](https://github.com/ravixalgorithm/Chow)'s
 Research mode: paste a URL, get a trust-tinted node in the live graph.
 
 ## Bring your own ontology
@@ -129,7 +129,7 @@ class MyDocument(OntoDocument):
 tasks = build_onto_intake_pipeline(document_model=MyDocument)
 ```
 
-This is exactly how Hindsight itself uses the package — its `cognee-service`
+This is exactly how Chow itself uses the package — its `cognee-service`
 passes its own `Document` model (part of a larger `Person`/`Place`/`Event`/
 `Object`/`Transaction` ontology) through this same hook.
 
@@ -165,7 +165,7 @@ or API key needed to run the suite.
 
 ## Project origin
 
-Built for and dogfooded by [Hindsight](https://github.com/ravixalgorithm/Hindsight),
+Built for and dogfooded by [Chow](https://github.com/ravixalgorithm/Chow),
 a self-hosted-Cognee entry for the "Where's My Context?" hackathon
 (targeting the **Best Use of Open Source** track). It lives in that repo's
 `cognee-onto/` directory — one project, reviewable in one place — but is

@@ -57,7 +57,7 @@ A thin proxy layer over `cognee-service`, all going through `src/lib/cognee/clie
 No external database account is required.
 
 - **Graph / vector / relational data:** embedded, file-based stores inside `cognee-service` — Ladybug (graph), LanceDB (vector), SQLite (relational). Configured in `cognee-service/.env`.
-- **Cross-session Q&A history:** a separate sqlite file (`cognee-service/hindsight_sessions.db`), written by the `/session/remember` / `/session/recall` endpoints in `cognee-service/app/main.py`.
+- **Cross-session Q&A history:** a separate sqlite file (`cognee-service/chow_sessions.db`), written by the `/session/remember` / `/session/recall` endpoints in `cognee-service/app/main.py`.
 
 ---
 

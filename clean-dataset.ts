@@ -15,7 +15,7 @@ async function cleanDatasets() {
     const dRes = await fetch(`${COGNEE_API_URL}/datasets`, { headers });
     const datasets = await dRes.json();
     
-    for (const name of ["detective", "detective_mode", "hindsight_core", "detective_core"]) {
+    for (const name of ["detective", "detective_mode", "chow_core", "detective_core"]) {
       const ds = datasets.find((d: any) => d.name === name);
       if (ds) {
         console.log(`Deleting dataset ${name} (${ds.id})...`);

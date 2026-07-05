@@ -58,9 +58,9 @@ No external database account is required — session history lives in a sqlite f
 
 ## `cognee-onto` — the open-source contribution
 
-Hindsight ships more than a demo — it ships **[`cognee-onto`](./cognee-onto)**,
+Chow ships more than a demo — it ships **[`cognee-onto`](./cognee-onto)**,
 a standalone, independently-installable Python package that any Cognee user
-can adopt, not just Hindsight's own code.
+can adopt, not just Chow's own code.
 
 **The problem it solves:** Cognee builds its graph by running an LLM
 extraction pass over whatever text you give `cognee.add()`. Point that at a
@@ -156,7 +156,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Project structure
 
 ```
-Hindsight/
+Chow/
 ├── cognee-service/      # self-hosted OSS Cognee, wrapped in FastAPI
 ├── cognee-onto/          # standalone Onto-intake pipeline Task (own package)
 ├── src/

@@ -1,4 +1,4 @@
-"""Hindsight's custom Cognee pipeline Task (Rule 2.2 of the "Best Use of
+"""Chow's custom Cognee pipeline Task (Rule 2.2 of the "Best Use of
 Open Source" playbook), sourced from our own cognee-onto contribution --
 see cognee-onto/cognee_onto/pipeline.py. Wiring it in here, not just
 publishing it standalone, is the proof it's actually reusable machinery.

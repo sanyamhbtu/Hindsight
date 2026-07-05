@@ -1,4 +1,4 @@
-"""Hindsight's custom Cognee ontology.
+"""Chow's custom Cognee ontology.
 
 Domain-shaped DataPoint models (Rule 2.1 of the PRD's "Best Use of Open
 Source" playbook) so cognify() extracts typed, investigation-shaped nodes
