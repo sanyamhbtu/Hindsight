@@ -1,0 +1,15 @@
+services:
+  cognee-service:
+    build:
+      context: .
+      dockerfile: cognee-service/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./cognee-service/.env
+    volumes:
+      - cognee-data:/service/.cognee_system
+      - cognee-data:/service/.data_storage
+
+volumes:
+  cognee-data:

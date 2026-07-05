@@ -9,9 +9,9 @@ async function fetchGraphStats(datasetId: string) {
     });
     if (!res.ok) return { nodeCount: 0, edgeCount: 0 };
     const data = await res.json();
-    return { 
-      nodeCount: data.nodes?.length || 0, 
-      edgeCount: data.edges?.length || 0 
+    return {
+      nodeCount: data.nodes?.length || 0,
+      edgeCount: data.edges?.length || 0
     };
   } catch {
     return { nodeCount: 0, edgeCount: 0 };
@@ -29,22 +29,24 @@ export async function POST(req: Request) {
     // Step 1: get before stats
     const beforeGraph = await fetchGraphStats(datasetId);
 
-    // Step 2: call improve (fire-and-forget)
-    fetch(`${getApiUrl()}/improve`, {
+    // Step 2: run cognee.memify() for real and wait for it -- this is a
+    // second pipeline pass over the already-cognified graph (triplet
+    // embedding / enrichment), not a placeholder.
+    const memifyRes = await fetch(`${getApiUrl()}/memify`, {
       method: "POST",
       headers: getHeaders(),
       body: JSON.stringify({ datasets: [datasetName] })
-    }).catch(e => console.error("Improve failed in background", e));
+    });
+    if (!memifyRes.ok) {
+      return NextResponse.json({ error: `memify failed: ${await memifyRes.text()}` }, { status: 502 });
+    }
 
-    // Step 3: wait 3s
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    // Step 4: get after stats
+    // Step 3: get after stats
     const afterGraph = await fetchGraphStats(datasetId);
 
     return NextResponse.json({
       status: "success",
-      message: "Memory improved",
+      message: "Memory improved via cognee.memify()",
       before: { nodes: beforeGraph.nodeCount, edges: beforeGraph.edgeCount },
       after: { nodes: afterGraph.nodeCount, edges: afterGraph.edgeCount },
       delta: {

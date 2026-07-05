@@ -1,94 +1,78 @@
-# Hindsight - Project Architecture & Handover Document
+# Chow — Project Architecture & Handover Document
 
-This document provides a complete top-to-bottom overview of the **Hindsight** project. It is designed to act as a handover document for frontend, backend, or database engineers joining the project.
-
----
-
-## 1. High-Level Overview
-Hindsight is a full-stack web application designed to demonstrate the power of **Graph Retrieval-Augmented Generation (Graph RAG)** vs. Standard Vector RAG. 
-Users upload unstructured documents (text, PDF, etc.) which are sent to a cloud-based graph engine (Cognee). The AI builds a knowledge graph from the documents, allowing users to ask complex questions that require multi-hop reasoning across different documents, which traditional vector databases fail at.
+Top-to-bottom overview of the **Chow** project, for anyone (frontend, backend, or ML) picking this up. Chow demonstrates **Graph RAG vs. Vector RAG** on top of **self-hosted, open-source Cognee** — not Cognee Cloud.
 
 ---
 
-## 2. Frontend Architecture
-The frontend is built for performance, interactivity, and aesthetics.
+## 1. High-level overview
 
-*   **Framework:** **Next.js 14 (App Router)** using React Server Components and Client Components.
-*   **Styling:** **Tailwind CSS v4** combined with raw CSS tokens in `index.css` for custom parchment/noir/detective aesthetics.
-*   **Animations:** **Framer Motion** handles page transitions, layout shifts, and micro-interactions (like the confetti or traversal trail).
-*   **Graph Visualization:** **react-force-graph-2d / 3d** is used to render the interactive memory board.
+Chow ingests scattered sources (text fragments, files, or URLs) and builds them into a Cognee knowledge graph. Users ask questions whose answers require multi-hop reasoning across fragments — something plain vector search can't do because it only ever retrieves the single most-similar chunk.
 
-### Core Pages (Routes):
-1.  **`/` (Landing Page):** Handles file uploading and ingestion. It routes users into either "Detective Mode" (noir aesthetic) or "Research Mode" (clean aesthetic) based on a toggle state stored in a custom hook (`useDatasetSession`).
-2.  **`/board` (Memory Board):** The interactive Knowledge Graph visualization. It pulls raw nodes and edges from the backend and renders them in a physics-based physics simulation.
-3.  **`/ask` (The Query Interface):** A split-screen comparison.
-    *   **Left (Hangover AI):** Displays standard vector search chunks.
-    *   **Right (Hindsight):** Displays the graph-synthesized answer and the step-by-step traversal trail.
-4.  **`/dashboard` (Memory Dashboard):** A stats page showing the number of nodes, edges, sources, and a table of extracted relationship triplets. Allows pruning via "Improve Memory".
+Two front doors, one engine:
+- **Detective mode** — a curated "last night" evidence set (the "Find Doug" case).
+- **Research mode** — real URLs, cleaned and trust-scored by **Onto** before they reach the graph.
 
 ---
 
-## 3. Backend Architecture (Next.js API Routes)
-The backend acts primarily as a secure proxy layer between the frontend and the **Cognee Cloud API**. It is completely serverless and runs on Next.js API Route Handlers (`src/app/api/...`).
+## 2. Frontend architecture
 
-### Internal API Routes:
-*   **`POST /api/ingest`**: Receives `FormData` (files) from the frontend. It bypasses the standard SDK due to bugs and directly posts the raw text to Cognee's `/api/v1/add` endpoint, followed immediately by `/api/v1/cognify` to trigger the graph processing.
-*   **`POST /api/ask`**: Handles user queries. It runs parallel fetch requests to Cognee:
-    *   One request for `CHUNKS` (Vector search).
-    *   One request for the specified graph search (e.g., `GRAPH_COMPLETION` or `SUMMARIES`).
-    *   It cleanly maps and formats the results so the frontend doesn't crash on raw `[object Object]` responses.
-*   **`GET /api/graph`**: Fetches the raw graph structure (nodes and edges) for a given dataset using Cognee's `/api/v1/datasets/{datasetId}/graph` endpoint. Used heavily by the `/board` and `/dashboard`.
-*   **`POST /api/improve`**: Simulates graph pruning/optimization.
-*   **`POST /api/forget`**: Instructs Cognee to delete the dataset from the cloud, wiping the memory.
+- **Framework:** Next.js (App Router), React, TypeScript.
+- **Styling:** Tailwind CSS v4.
+- **Animations:** Framer Motion.
+- **Graph visualization:** `react-force-graph-2d`.
 
----
+### Core pages
 
-## 4. Database & AI Engine (Cognee Cloud)
-Hindsight does not use a traditional local database (like Prisma/Postgres) to store app state. **All document state, embeddings, and graph triplets are hosted remotely in the Cognee Cloud.**
-
-### Database (Postgres via Neon)
-While the app uses Cognee for the AI graph, the environment is pre-configured with Neon Postgres credentials. If future features require user authentication or saving search history, this database is ready to be used.
-
-### Cognee Cloud (Graph/Vector Database)
-Cognee acts as a hybrid engine:
-1.  **Vector Store:** It chunks incoming text, embeds it, and stores it in a vector database.
-2.  **Graph Database:** It runs an LLM over the text to extract Subject-Relation-Object triplets and stores them in a NetworkX-style graph.
+1. **`/` (Landing page)** — ingest UI. Detective mode has a single-shot fragment box; Research mode stages multiple URLs/docs into a list before sending the batch (`queuedSources` state in `src/app/page.tsx`).
+2. **`/board`** — the interactive knowledge graph. Nodes are tinted by trust score; includes `memify`/`forget` controls.
+3. **`/ask`** — the split-screen query interface: vector RAG (`CHUNKS`) on one side, graph-reasoned answer + traversal trail on the other.
+4. **`/dashboard`** — node/edge stats, trust distribution, `memify` before/after, and cross-session Q&A history.
 
 ---
 
-## 5. External API Calls to Cognee Cloud
-Because the standard `cognee-vercel-ai-sdk` had routing bugs, all external calls to Cognee are handled via direct `fetch` implementations located in `src/lib/cognee/client.ts`. 
+## 3. Backend architecture
 
-**The primary Cognee Cloud Endpoints used:**
-*   **ADD:** `POST {COGNEE_API_URL}/add` -> Uploads the payload to a dataset.
-*   **COGNIFY:** `POST {COGNEE_API_URL}/cognify` -> Triggers the LLM processing pipeline.
-*   **SEARCH:** `POST {COGNEE_API_URL}/search` -> Runs queries against the dataset. We pass specific `searchType` enums:
-    *   `CHUNKS` -> Returns raw text pieces (Vector RAG).
-    *   `GRAPH_COMPLETION` -> Returns the synthesized Graph RAG answer.
-    *   `GRAPH_SUMMARY_COMPLETION` -> Returns broad dataset overviews (mapped from the UI's "Wolf Pack" mode).
-*   **GRAPH DATA:** `GET {COGNEE_API_URL}/datasets/{datasetId}/graph` -> Returns `{ nodes: [], edges: [] }`.
+Two independent services:
+
+### `cognee-service/` (the actual engine)
+
+A FastAPI wrapper around the real, self-hosted `cognee` OSS package (`topoteretes/cognee`). Runs as its own process — via a local Python venv or Docker — not Cognee Cloud. See `cognee-service/README.md` for the full internals (custom ontology, custom pipeline Task, store config).
+
+Endpoints: `/api/v1/add`, `/cognify`, `/onto-ingest` (the custom pipeline Task), `/search`, `/memify`, `/datasets/{id}/graph`, `/datasets/{id}` (DELETE = forget), plus `/session/remember` and `/session/recall` for cross-session Q&A history (sqlite-backed — no external database needed).
+
+### Next.js API routes (`src/app/api/...`)
+
+A thin proxy layer over `cognee-service`, all going through `src/lib/cognee/client.ts`:
+
+- **`POST /api/ingest`** — routes URL sources through the Onto pipeline (`ontoIngest`), and text/file sources through `add` + `cognify`.
+- **`POST /api/ask`** — runs `GRAPH_COMPLETION_CONTEXT_EXTENSION` and `CHUNKS` in parallel for the split-screen comparison, plus derives the traversal trail from the raw graph.
+- **`GET /api/graph`** — raw nodes/edges for a dataset, shaped for the force-graph UI.
+- **`POST /api/improve`** — calls `cognee.memify()` for real; returns before/after node/edge counts.
+- **`POST /api/forget-all`** — nuclear (wipe dataset) or surgical (re-add everything except one source) deletion.
 
 ---
 
-## 6. Environment Variables & Keys
-The project requires the following keys in the `.env` file to function. **Do not expose these to the frontend client.**
+## 4. Storage
+
+No external database account is required.
+
+- **Graph / vector / relational data:** embedded, file-based stores inside `cognee-service` — Ladybug (graph), LanceDB (vector), SQLite (relational). Configured in `cognee-service/.env`.
+- **Cross-session Q&A history:** a separate sqlite file (`cognee-service/hindsight_sessions.db`), written by the `/session/remember` / `/session/recall` endpoints in `cognee-service/app/main.py`.
+
+---
+
+## 5. Environment variables
+
+**Next.js (`.env.local`)** — see `.env.local.example` for the template:
 
 ```env
-# Neon Postgres Database (Ready for future auth/state storage)
-DB_PROVIDER="postgres"
-DB_HOST="YOUR_NEON_DB_HOST"
-DB_PORT="5432"
-DB_USERNAME="YOUR_DB_USERNAME"
-DB_PASSWORD="YOUR_DB_PASSWORD"
-DB_NAME="neondb"
-
-# Cognee Cloud Engine Credentials (Required for all core RAG/Graph features)
-# These MUST match the specific AWS tenant provided by Cognee
-COGNEE_API_URL="https://YOUR_TENANT.aws.cognee.ai/api/v1"
-COGNEE_TENANT_ID="YOUR_TENANT_ID"
-COGNEE_USER_ID="YOUR_USER_ID"
-COGNEE_API_KEY="YOUR_API_KEY"
-
-# Optional: For web-scraping features if implemented in the future
+COGNEE_MODE="selfhosted"
+COGNEE_SELFHOSTED_URL="http://localhost:8000/api/v1"
 ONTO_API_KEY="your_onto_api_key"
 ```
+
+`COGNEE_MODE=cloud` plus `COGNEE_API_URL` / `COGNEE_TENANT_ID` / `COGNEE_USER_ID` / `COGNEE_API_KEY` switches to Cognee Cloud as a fallback — not the primary path.
+
+**`cognee-service/.env`** — see `cognee-service/.env.template`: `LLM_PROVIDER`/`LLM_API_KEY` (OpenAI by default), `EMBEDDING_PROVIDER` (fastembed, local, free), store providers, and `ONTO_API_KEY`.
+
+Never commit real values for either file — both are gitignored; only the `.example`/`.template` files are tracked.

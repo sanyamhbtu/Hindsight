@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env*.example
 
 # vercel
 .vercel
@@ -40,7 +41,18 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# python (cognee-service, cognee-onto)
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# runtime data (cognee-service)
+*.db
+.cognee_system/
+.data_storage/
+
 # ignored per user request
 CLAUDE.md
 AGENTS.md
-cognee-onto/

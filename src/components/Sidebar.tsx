@@ -39,24 +39,28 @@ export default function Sidebar() {
     { href: "/dashboard", icon: <Zap size={20} />, label: "Dashboard" },
   ];
 
-  return (
-    <div className="w-[56px] h-screen flex-none border-r border-[#2C1F0E] bg-[#0D0D0D] flex flex-col items-center py-4 z-50">
-      <Link href="/" className="text-xl font-heading text-[#F5C842] mb-6 hover:scale-110 transition-transform">
-        🕵️
-      </Link>
-      
-      <div className="w-8 h-[1px] bg-[#2C1F0E] mb-6" />
+  // The landing page is its own nav bar — the in-app rail is for the
+  // interior pages only.
+  if (pathname === "/") return null;
 
-      <div className="flex flex-col gap-6 flex-1">
+  return (
+    <div className="w-[64px] h-screen flex-none border-r border-black/[0.08] bg-white flex flex-col items-center py-5 z-50">
+      <Link href="/" className="mb-6 flex items-center justify-center transition-transform hover:scale-110">
+        <img src="/chow-icon.svg" alt="Chow" className="size-5" />
+      </Link>
+
+      <div className="w-8 h-px bg-black/[0.08] mb-6" />
+
+      <div className="flex flex-col gap-3 flex-1">
         {navItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
             title={item.label}
-            className={`p-2 rounded-lg transition-colors ${
-              pathname === item.href 
-                ? "bg-[#C0392B] text-white" 
-                : "text-[#8B6914] hover:bg-[#2C1F0E] hover:text-[#F5C842]"
+            className={`flex size-9 items-center justify-center rounded-lg transition-colors ${
+              pathname === item.href
+                ? "bg-[#121212] text-white"
+                : "text-black/40 hover:bg-black/[0.04] hover:text-black"
             }`}
           >
             {item.icon}
@@ -64,15 +68,15 @@ export default function Sidebar() {
         ))}
       </div>
 
-      <div className="w-8 h-[1px] bg-[#2C1F0E] mb-6" />
+      <div className="w-8 h-px bg-black/[0.08] mb-5" />
 
-      <div 
+      <div
         title={`Memory: ${status}`}
-        className={`w-3 h-3 rounded-full mb-4 shadow-lg ${
-          status === 'processing' ? 'bg-yellow-500 animate-pulse' :
+        className={`size-2.5 rounded-full mb-1 ${
+          status === 'processing' ? 'bg-amber-500 animate-pulse' :
           status === 'error' ? 'bg-[#C0392B]' :
-          'bg-green-500'
-        }`} 
+          'bg-emerald-500'
+        }`}
       />
     </div>
   );
