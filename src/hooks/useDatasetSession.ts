@@ -6,25 +6,25 @@ export function useDatasetSession() {
   const [activeMode, setActiveMode] = useState<string>("detective");
 
   useEffect(() => {
-    let id = localStorage.getItem('hindsight_session');
+    let id = localStorage.getItem('chow_session');
     if (!id) {
       id = uuidv4();
-      localStorage.setItem('hindsight_session', id);
+      localStorage.setItem('chow_session', id);
     }
     setSessionId(id);
 
-    const mode = localStorage.getItem('hindsight_active_mode') || 'detective';
+    const mode = localStorage.getItem('chow_active_mode') || 'detective';
     setActiveMode(mode);
 
     const handleStorage = () => {
-      setActiveMode(localStorage.getItem('hindsight_active_mode') || 'detective');
+      setActiveMode(localStorage.getItem('chow_active_mode') || 'detective');
     };
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   const setActiveDatasetMode = (mode: string) => {
-    localStorage.setItem('hindsight_active_mode', mode);
+    localStorage.setItem('chow_active_mode', mode);
     setActiveMode(mode);
     window.dispatchEvent(new Event('storage'));
   };

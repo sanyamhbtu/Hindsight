@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, Inter, JetBrains_Mono } from "next/font/google";
+import { Geist, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const bebasNeue = Bebas_Neue({
-  weight: "400",
-  variable: "--font-bebas-neue",
+const geist = Geist({
+  weight: ["500", "600"],
+  variable: "--font-geist",
   subsets: ["latin"],
 });
 
-const inter = Inter({
-  variable: "--font-inter",
+const interTight = Inter_Tight({
+  weight: ["400", "500"],
+  variable: "--font-inter-tight",
   subsets: ["latin"],
 });
 
@@ -18,13 +19,10 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
-import HangoverEffect from "@/components/HangoverEffect";
-
 import Sidebar from "@/components/Sidebar";
-import PolaroidBurnIn from "@/components/PolaroidBurnIn";
 
 export const metadata: Metadata = {
-  title: "Hindsight - What Happened?",
+  title: "Chow - What Happened?",
   description: "The night you'll never remember.",
 };
 
@@ -36,19 +34,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${bebasNeue.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased dark`}
+      className={`${geist.variable} ${interTight.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-row bg-bourbon text-parchment relative overflow-hidden">
-        <PolaroidBurnIn />
+      <body className="min-h-full flex flex-row bg-[#fafafa] text-[#0d0d0d] relative">
         <Sidebar />
         <div className="flex-1 flex flex-col relative h-screen overflow-y-auto">
-          <HangoverEffect />
-          <svg className="pointer-events-none fixed inset-0 z-50 h-full w-full opacity-[0.35]" xmlns="http://www.w3.org/2000/svg">
-            <filter id="noiseFilter">
-              <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch" />
-            </filter>
-            <rect width="100%" height="100%" filter="url(#noiseFilter)" />
-          </svg>
           {children}
         </div>
       </body>

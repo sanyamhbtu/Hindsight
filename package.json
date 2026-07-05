@@ -1,5 +1,5 @@
 {
-  "name": "hindsight",
+  "name": "chow",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,11 +10,9 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
-    "@neondatabase/serverless": "^1.1.0",
     "@types/uuid": "^10.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "cognee-vercel-ai-sdk": "^0.0.2",
     "framer-motion": "^12.42.0",
     "lucide-react": "^1.22.0",
     "next": "16.2.9",

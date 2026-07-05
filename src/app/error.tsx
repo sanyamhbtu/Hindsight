@@ -15,27 +15,24 @@ export default function ErrorBoundary({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-[#1A1108] flex flex-col items-center justify-center text-[#F5EDD4] p-8 text-center relative overflow-hidden">
-      <div 
-        className="absolute inset-0 opacity-20 pointer-events-none mix-blend-overlay"
-        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
-      />
-      
-      <AlertTriangle className="w-24 h-24 text-[#C0392B] mb-6 animate-pulse" />
-      <h2 className="text-5xl font-heading tracking-widest text-[#F5C842] mb-4">CRITICAL FAILURE</h2>
-      <p className="text-xl font-mono text-[#8B6914] mb-8 max-w-lg">
+    <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center text-[#0d0d0d] p-8 text-center relative overflow-hidden">
+      <AlertTriangle className="w-16 h-16 text-[#C0392B] mb-6" />
+      <h2 className="text-3xl font-medium tracking-[-0.02em] text-[#0d0d0d] mb-4" style={{ fontFamily: "var(--font-geist)" }}>
+        Critical failure
+      </h2>
+      <p className="text-[16px] text-black/50 mb-8 max-w-lg leading-relaxed">
         The memory fragment is corrupted or the connection was lost. We couldn't reconstruct what happened.
       </p>
-      
-      <div className="bg-[#0D0D0D] border border-[#C0392B] p-4 text-left text-sm font-mono text-[#C0392B] mb-8 rounded max-w-2xl w-full overflow-auto max-h-48">
+
+      <div className="bg-white border border-[#C0392B]/25 p-4 text-left text-sm font-mono text-[#C0392B] mb-8 rounded-lg max-w-2xl w-full overflow-auto max-h-48 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
         {error.message || "Unknown error occurred"}
       </div>
 
       <button
         onClick={reset}
-        className="bg-[#C0392B] hover:bg-red-600 text-white px-8 py-4 font-heading tracking-widest text-2xl transition-colors shadow-lg"
+        className="rounded-full bg-[linear-gradient(143deg,#1c1c1c_1%,#353535_53%,#1c1c1c_100%)] text-white px-6 py-3 text-[15px] font-medium shadow-[0_2px_4px_-1px_rgba(13,13,13,0.5),0_0_0_1px_black] transition-opacity hover:opacity-90"
       >
-        REBOOT SYSTEM
+        Reboot system
       </button>
     </div>
   );

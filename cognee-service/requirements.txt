@@ -1,0 +1,7 @@
+cognee[fastembed]
+fastapi
+uvicorn[standard]
+python-multipart
+httpx
+python-dotenv
+-e ../cognee-onto

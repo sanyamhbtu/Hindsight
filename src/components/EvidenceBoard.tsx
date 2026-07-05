@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, useRef } from "react";
 import { motion, useDragControls } from "framer-motion";
+import { ENTITY_THEME as THEME, trustColor } from "@/lib/entityTheme";
 
 export type GraphNode = {
   id: string;
@@ -34,16 +35,6 @@ function getNodeRotation(nodeId: string): number {
   }
   return (Math.abs(hash) % 7) - 3; // -3 to +3 degrees
 }
-
-const THEME: any = {
-  Person: "#F5C842",
-  Place: "#38bdf8",
-  Event: "#C0392B",
-  Object: "#9ca3af",
-  Document: "#8B6914",
-  Transaction: "#10b981",
-  default: "#2C1F0E",
-};
 
 export default function EvidenceBoard({ nodes, edges, onNodeClick, onBackgroundClick, activePathIds, selectedNodeId }: Props) {
   const [nodePositions, setNodePositions] = useState<Record<string, { x: number, y: number }>>({});
@@ -90,17 +81,13 @@ export default function EvidenceBoard({ nodes, edges, onNodeClick, onBackgroundC
   };
 
   return (
-    <div 
-      ref={containerRef} 
-      className="w-full h-full bg-[#0D0D0D] relative overflow-hidden"
+    <div
+      ref={containerRef}
+      className="w-full h-full bg-[#f2f2f0] relative overflow-hidden"
       onClick={onBackgroundClick}
       style={{
-        backgroundColor: '#3d2b1f',
-        backgroundImage: `
-          repeating-linear-gradient(45deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 1px, transparent 0px, transparent 50%),
-          repeating-linear-gradient(-45deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 1px, transparent 0px, transparent 50%)
-        `,
-        backgroundSize: '10px 10px'
+        backgroundImage: `radial-gradient(rgba(0,0,0,0.08) 1px, transparent 1px)`,
+        backgroundSize: '22px 22px'
       }}
     >
       <svg className="absolute inset-0 w-full h-full pointer-events-none">
@@ -113,32 +100,32 @@ export default function EvidenceBoard({ nodes, edges, onNodeClick, onBackgroundC
           const midY = (sourcePos.y + targetPos.y) / 2 - 30; // curve
           
           const isActive = activePathIds?.has(`${edge.source}-${edge.target}`) || activePathIds?.has(`${edge.target}-${edge.source}`);
-          const color = isActive ? "#F5C842" : "#C0392B";
-          
+          const color = isActive ? "#f35918" : "#0d0d0d";
+
           return (
             <g key={`edge-${i}`}>
               <motion.path
                 d={`M ${sourcePos.x} ${sourcePos.y} Q ${midX} ${midY} ${targetPos.x} ${targetPos.y}`}
                 fill="transparent"
                 stroke={color}
-                strokeWidth={isActive ? 2.5 : 1.5}
-                opacity={0.7}
+                strokeWidth={isActive ? 2.5 : 1.25}
+                opacity={isActive ? 0.9 : 0.25}
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
                 transition={{ duration: 0.6, delay: i * 0.08 }}
-                style={isActive ? { filter: "drop-shadow(0 0 6px #F5C842)" } : {}}
+                style={isActive ? { filter: "drop-shadow(0 0 6px rgba(243,89,24,0.4))" } : {}}
               />
-              <motion.foreignObject 
-                x={midX - 50} 
-                y={midY - 10} 
-                width="100" 
+              <motion.foreignObject
+                x={midX - 50}
+                y={midY - 10}
+                width="100"
                 height="20"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.08 + 0.3 }}
               >
                 <div className="flex justify-center items-center">
-                  <span className="bg-[#C0392B] text-white text-[9px] font-mono px-2 py-0.5 rounded-full whitespace-nowrap border border-black">
+                  <span className="bg-white text-black/60 text-[9px] font-mono px-2 py-0.5 rounded-full whitespace-nowrap border border-black/[0.08] shadow-sm">
                     {edge.relation}
                   </span>
                 </div>
@@ -167,38 +154,48 @@ export default function EvidenceBoard({ nodes, edges, onNodeClick, onBackgroundC
               onNodeClick?.(node);
             }}
             whileHover={{ scale: 1.08, zIndex: 50 }}
-            className="absolute -ml-[75px] -mt-[45px] w-[150px] cursor-grab active:cursor-grabbing index-card"
+            className="absolute -ml-[75px] -mt-[45px] w-[150px] cursor-grab active:cursor-grabbing"
             style={{ rotate: getNodeRotation(node.id) }}
           >
             <div className={`
-              bg-[#F5EDD4] shadow-[2px_3px_8px_rgba(0,0,0,0.5)] 
-              relative rounded-sm overflow-hidden border
-              ${isSelected ? 'border-[#C0392B] border-2 shadow-lg shadow-[#C0392B]/30' : 'border-[#d4c39c] border'}
+              bg-white shadow-[0_4px_14px_rgba(0,0,0,0.12)]
+              relative rounded-md overflow-hidden border
+              ${isSelected ? 'border-[#f35918] border-2 shadow-lg shadow-[#f35918]/20' : 'border-black/[0.08] border'}
             `}>
-              <div 
-                className="h-1.5 w-full" 
+              <div
+                className="h-1.5 w-full"
                 style={{ backgroundColor: THEME[node.type] || THEME.default }}
               />
-              
-              <div 
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.8)] border border-black/20" 
-                style={{ backgroundColor: THEME[node.type] || THEME.default }} 
+
+              <div
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.3)] border border-white"
+                style={{ backgroundColor: THEME[node.type] || THEME.default }}
               />
-              
-              <div className="p-2 pt-3 flex flex-col items-center text-center">
-                <span 
-                  className="text-[10px] font-bold font-heading mb-1 w-full text-center"
-                  style={{ color: THEME[node.type] || THEME.default }}
+
+              {typeof node.trust === "number" && (
+                <div
+                  title={`Trust score: ${Math.round(node.trust)}`}
+                  className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full border border-white shadow-[0_1px_2px_rgba(0,0,0,0.2)] flex items-center justify-center"
+                  style={{ backgroundColor: trustColor(node.trust) }}
                 >
-                  📍 {node.type.toUpperCase()}
+                  <span className="sr-only">Trust {Math.round(node.trust)}</span>
+                </div>
+              )}
+
+              <div className="p-2 pt-3 flex flex-col items-center text-center">
+                <span
+                  className="text-[10px] font-semibold mb-1 w-full text-center tracking-wide"
+                  style={{ color: THEME[node.type] || THEME.default, fontFamily: "var(--font-geist)" }}
+                >
+                  {node.type.toUpperCase()}
                 </span>
-                
-                <span className="text-sm font-bold text-[#1A1108] leading-tight font-body">
+
+                <span className="text-sm font-semibold text-[#0d0d0d] leading-tight">
                   {node.label}
                 </span>
-                
+
                 {node.sourceFragment && (
-                  <span className="mt-2 text-[9px] text-[#8B6914] font-mono">
+                  <span className="mt-2 text-[9px] text-black/40 font-mono">
                     {node.sourceFragment}
                   </span>
                 )}
@@ -208,13 +205,22 @@ export default function EvidenceBoard({ nodes, edges, onNodeClick, onBackgroundC
         );
       })}
       {/* Legend */}
-      <div className="absolute bottom-6 left-6 z-40 bg-[#0D0D0D]/80 backdrop-blur border border-[#2C1F0E] p-4 rounded-sm text-xs font-mono">
-        <div className="text-[#F5C842] font-bold mb-2 uppercase tracking-widest border-b border-[#2C1F0E] pb-1">Entity Legend</div>
+      <div className="absolute bottom-6 left-6 z-40 bg-white/90 backdrop-blur border border-black/[0.08] p-4 rounded-lg text-xs font-mono shadow-[0_4px_14px_rgba(0,0,0,0.08)]">
+        <div className="text-black/70 font-semibold mb-2 uppercase tracking-widest border-b border-black/[0.08] pb-1">Entity Legend</div>
         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-          {Object.entries(THEME).filter(([k]) => k !== 'default').map(([key, color]) => (
+          {Object.entries(THEME).filter(([k]) => k !== 'default' && k !== 'Document').map(([key, color]) => (
             <div key={key} className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: color as string }} />
-              <span className="text-[#F5EDD4]/70">{key}</span>
+              <span className="text-black/55">{key}</span>
+            </div>
+          ))}
+        </div>
+        <div className="text-black/70 font-semibold mt-3 mb-2 uppercase tracking-widest border-b border-black/[0.08] pb-1">Trust (corner dot)</div>
+        <div className="grid grid-cols-1 gap-y-2">
+          {[["High (70+)", trustColor(80)], ["Medium (40-69)", trustColor(55)], ["Low (<40)", trustColor(20)]].map(([label, color]) => (
+            <div key={label as string} className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: color as string }} />
+              <span className="text-black/55">{label}</span>
             </div>
           ))}
         </div>

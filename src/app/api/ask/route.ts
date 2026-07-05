@@ -1,26 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { search } from "@/lib/cognee/client";
+import { search, getDatasetGraph } from "@/lib/cognee/client";
 import { DETECTIVE_SYSTEM_PROMPT } from "@/lib/detective/fragments";
 
 const PROMPTS: any = {
   GRAPH_COMPLETION: DETECTIVE_SYSTEM_PROMPT,
-  CHUNKS: undefined,
-  INSIGHTS: undefined
+  CHUNKS: undefined
 };
 
-// Handle varied triplet response shapes from Cognee
-function normalizeInsights(raw: any[]): any[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.map(item => {
-    if (typeof item === 'string') {
-      return { subject: 'Unknown', relation: 'CONNECTED_TO', object: 'Unknown' };
-    }
-    return {
-      subject: item.subject || item.node_from || item.source || 'Unknown',
-      relation: item.relation || item.edge_type || item.predicate || 'CONNECTED_TO',
-      object: item.object || item.node_to || item.target || 'Unknown'
-    };
-  }).filter(t => t.subject !== 'Unknown' && t.object !== 'Unknown');
+// The traversal trail is derived from the real node/edge graph (via
+// getDatasetGraph), not a SearchType search -- TRIPLET_COMPLETION requires
+// memify() to have already run and returns an LLM completion string, not
+// structured triplets, so it can't back this.
+function relationsFromGraph(graph: { nodes?: any[]; edges?: any[] }): any[] {
+  const nodes = graph.nodes || [];
+  const edges = graph.edges || [];
+  const labelById = new Map(nodes.map((n: any) => [n.id, n.label || n.id]));
+
+  return edges.map((edge: any) => ({
+    subject: labelById.get(edge.source) || edge.source || 'Unknown',
+    relation: edge.relation || 'CONNECTED_TO',
+    object: labelById.get(edge.target) || edge.target || 'Unknown'
+  })).filter(t => t.subject !== 'Unknown' && t.object !== 'Unknown');
 }
 
 export async function POST(req: NextRequest) {
@@ -65,21 +65,21 @@ export async function POST(req: NextRequest) {
 
     const activeSearchType = searchType === 'TEMPORAL' ? 'TEMPORAL' : 'GRAPH_COMPLETION_CONTEXT_EXTENSION';
 
-    // Parallel searches
-    const [graphResults, chunksResults, insightsResults] = await Promise.all([
-      search(dataset, question, activeSearchType, { 
-        topK: 5, 
+    // Parallel searches + the raw graph (for the traversal trail)
+    const [graphResults, chunksResults, graphData] = await Promise.all([
+      search(dataset, question, activeSearchType, {
+        topK: 5,
         systemPrompt: PROMPTS["GRAPH_COMPLETION"],
-        save_interaction: true 
+        save_interaction: true
       }).catch((e) => { console.warn(`${activeSearchType} search failed:`, e); return []; }),
       search(dataset, question, "CHUNKS", { topK: 3 }).catch((e) => { console.warn("CHUNKS search failed:", e); return []; }),
-      search(dataset, question, "INSIGHTS", { topK: 15, save_interaction: true }).catch((e) => { console.warn("INSIGHTS search failed:", e); return []; })
+      getDatasetGraph(dataset).catch((e) => { console.warn("graph fetch for trail failed:", e); return { nodes: [], edges: [] }; })
     ]);
-    
+
     const graphAnswer = extractAnswer(graphResults);
     const chunksAnswer = extractAnswer(chunksResults, true);
 
-    const normalizedInsights = normalizeInsights(insightsResults);
+    const normalizedInsights = relationsFromGraph(graphData);
 
     let trail: any[] = [];
     if (normalizedInsights.length > 0) {

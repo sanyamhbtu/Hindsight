@@ -102,8 +102,8 @@ function AskPageContent() {
         }
         
         // Save for the forget demo
-        localStorage.setItem("hindsight_last_query", query);
-        localStorage.setItem("hindsight_last_answer", data.graph?.answer || "No Graph response.");
+        localStorage.setItem("chow_last_query", query);
+        localStorage.setItem("chow_last_answer", data.graph?.answer || "No Graph response.");
 
         // Trigger confetti
         setShowConfetti(false);
@@ -142,69 +142,67 @@ function AskPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1A1108] flex flex-col relative overflow-hidden w-full">
+    <div className="min-h-screen bg-[#fafafa] flex flex-col relative overflow-hidden w-full">
       {/* Header */}
-      <header className="flex-none h-16 border-b border-[#2C1F0E] bg-[#0D0D0D]/80 backdrop-blur-md px-6 flex items-center z-10 gap-4">
-        <button 
+      <header className="flex-none h-16 border-b border-black/[0.08] bg-white/80 backdrop-blur-md px-6 flex items-center z-10 gap-4">
+        <button
           onClick={() => router.back()}
-          className="text-[#8B6914] hover:text-[#F5EDD4] transition-colors"
+          className="text-black/40 hover:text-black transition-colors"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <div className="font-heading tracking-widest text-xl text-white">
-          WHAT DO YOU NEED TO KNOW?
+        <div className="text-[17px] font-semibold tracking-[-0.02em] text-[#0d0d0d]" style={{ fontFamily: "var(--font-geist)" }}>
+          What do you need to know?
         </div>
-        <button 
+        <button
           onClick={handleReplay}
-          className="ml-auto flex items-center gap-2 text-[#8B6914] hover:text-[#F5C842] border border-[#2C1F0E] px-3 py-1.5 rounded-sm transition-colors text-sm font-mono"
+          className="ml-auto flex items-center gap-2 text-black/50 hover:text-black border border-black/[0.08] px-3 py-1.5 rounded-full transition-colors text-sm font-mono"
         >
-          <Play className="w-4 h-4" /> REPLAY
+          <Play className="w-4 h-4" /> Replay
         </button>
       </header>
 
       {/* Query Banner */}
-      <div className="bg-[#F5EDD4] border-b-4 border-[#C0392B] py-6 px-12 text-center relative z-10 shadow-lg flex flex-col items-center">
-        {/* Yellow legal pad styling */}
-        <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: "repeating-linear-gradient(transparent, transparent 27px, #93C5FD 27px, #93C5FD 28px)" }} />
-        <h2 className="text-3xl font-body text-[#1A1108] font-bold relative z-10 mb-6">"{query}"</h2>
-        
+      <div className="bg-white border-b border-black/[0.08] py-6 px-12 text-center relative z-10 flex flex-col items-center">
+        <h2 className="text-2xl font-medium tracking-[-0.01em] text-[#0d0d0d] relative z-10 mb-6" style={{ fontFamily: "var(--font-geist)" }}>"{query}"</h2>
+
         {/* Mode Toggle */}
-        <div className="relative z-10 flex bg-[#2C1F0E] p-1 rounded border border-[#8B6914] shadow-md">
+        <div className="relative z-10 flex bg-[#f0f0ef] p-1 rounded-full border border-black/[0.06]">
           <button
             onClick={() => setSearchMode('GRAPH_COMPLETION')}
-            className={`px-4 py-1.5 font-heading text-sm tracking-widest transition-all ${
-              searchMode === 'GRAPH_COMPLETION' ? 'bg-[#F5EDD4] text-[#1A1108]' : 'text-[#8B6914] hover:text-[#F5C842]'
+            className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-all ${
+              searchMode === 'GRAPH_COMPLETION' ? 'bg-white text-[#0d0d0d] shadow-[0_1px_2px_rgba(0,0,0,0.08)]' : 'text-black/45 hover:text-black/70'
             }`}
           >
-            STANDARD
+            Standard
           </button>
           <button
             onClick={() => setSearchMode('GRAPH_COMPLETION_COT')}
-            className={`px-4 py-1.5 font-heading text-sm tracking-widest transition-all ${
-              searchMode === 'GRAPH_COMPLETION_COT' ? 'bg-[#F5EDD4] text-[#1A1108]' : 'text-[#8B6914] hover:text-[#F5C842]'
+            className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-all ${
+              searchMode === 'GRAPH_COMPLETION_COT' ? 'bg-white text-[#0d0d0d] shadow-[0_1px_2px_rgba(0,0,0,0.08)]' : 'text-black/45 hover:text-black/70'
             }`}
           >
-            🧠 DEEP REASONING
+            🧠 Deep reasoning
           </button>
           <button
             onClick={() => setSearchMode('GRAPH_SUMMARY_COMPLETION')}
-            className={`px-4 py-1.5 font-heading text-sm tracking-widest transition-all flex items-center gap-2 ${
-              searchMode === 'GRAPH_SUMMARY_COMPLETION' ? 'bg-[#F5EDD4] text-[#1A1108]' : 'text-[#8B6914] hover:text-[#F5C842]'
+            className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-all flex items-center gap-2 ${
+              searchMode === 'GRAPH_SUMMARY_COMPLETION' ? 'bg-white text-[#0d0d0d] shadow-[0_1px_2px_rgba(0,0,0,0.08)]' : 'text-black/45 hover:text-black/70'
             }`}
           >
-            🎲 WOLF PACK
+            🎲 Wolf pack
           </button>
           <button
             onClick={() => setSearchMode('TEMPORAL')}
-            className={`px-4 py-1.5 font-heading text-sm tracking-widest transition-all flex items-center gap-2 ${
-              searchMode === 'TEMPORAL' ? 'bg-[#F5EDD4] text-[#1A1108]' : 'text-[#8B6914] hover:text-[#F5C842]'
+            className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-all flex items-center gap-2 ${
+              searchMode === 'TEMPORAL' ? 'bg-white text-[#0d0d0d] shadow-[0_1px_2px_rgba(0,0,0,0.08)]' : 'text-black/45 hover:text-black/70'
             }`}
           >
-            ⏱️ TIMELINE
+            ⏱️ Timeline
           </button>
         </div>
         {searchMode === 'GRAPH_SUMMARY_COMPLETION' && autoSelectedMode && (
-          <div className="relative z-10 mt-3 text-xs font-mono text-[#8B6914] bg-[#2C1F0E] px-3 py-1 rounded">
+          <div className="relative z-10 mt-3 text-xs font-mono text-black/45 bg-[#f0f0ef] px-3 py-1 rounded-full">
             The Wolf Pack doesn't plan. Cognee chose: {autoSelectedMode}
           </div>
         )}
@@ -214,24 +212,23 @@ function AskPageContent() {
       <main className="flex-1 flex flex-col md:flex-row relative z-10">
         
         {/* Left Panel: RAG */}
-        <div className="flex-1 border-r border-[#2C1F0E] p-8 flex flex-col relative">
-          <div className="absolute inset-0 bg-[#0D0D0D]/20 pointer-events-none" />
-          <h2 className="font-heading text-3xl text-[#8B6914]/80 mb-6 flex items-center gap-3">
-            <span className="text-4xl opacity-50">🤕</span> 
-            HANGOVER AI
-            <span className="text-xs font-mono tracking-widest ml-auto opacity-50 uppercase border border-[#8B6914]/30 px-2 py-1 rounded">Vector RAG (Chunks)</span>
+        <div className="flex-1 border-r border-black/[0.08] p-8 flex flex-col relative opacity-80">
+          <h2 className="text-xl font-medium tracking-[-0.01em] text-black/50 mb-6 flex items-center gap-3" style={{ fontFamily: "var(--font-geist)" }}>
+            <span className="text-2xl opacity-60">🤕</span>
+            Hangover AI
+            <span className="text-[11px] font-mono tracking-widest ml-auto uppercase text-black/35 border border-black/[0.08] px-2 py-1 rounded-full">Vector RAG (chunks)</span>
           </h2>
-          
-          <div className="bg-[#2C1F0E]/20 p-6 rounded-sm flex-1 border border-[#2C1F0E]/40 relative">
-            <div className="absolute top-2 right-2 text-[10px] font-mono text-[#8B6914]/50 bg-[#1A1108] px-2 py-1 rounded-sm">
-              🤷 Stu Energy
+
+          <div className="bg-white p-6 rounded-lg flex-1 border border-black/[0.08] relative">
+            <div className="absolute top-2 right-2 text-[10px] font-mono text-black/35 bg-[#fafafa] px-2 py-1 rounded-full border border-black/[0.06]">
+              🤷 Stu energy
             </div>
             {ragAnswer ? (
-              <p className="text-[#F5EDD4]/60 font-body text-lg leading-relaxed filter grayscale-[50%] blur-[0.5px]">
+              <p className="text-black/45 text-[16px] leading-relaxed">
                 {renderMarkdown(ragAnswer)}
               </p>
             ) : (
-              <div className="flex items-center gap-3 text-[#8B6914]/50 h-full justify-center">
+              <div className="flex items-center gap-3 text-black/35 h-full justify-center">
                 <Loader2 className="w-5 h-5 animate-spin" />
                 <span className="font-mono text-sm">Searching embeddings...</span>
               </div>
@@ -240,17 +237,17 @@ function AskPageContent() {
         </div>
 
         {/* Middle Panel: Context */}
-        <div className="flex-1 border-r border-[#2C1F0E] p-8 flex flex-col relative overflow-hidden">
-          <h2 className="font-heading text-3xl text-[#38bdf8]/80 mb-6 flex items-center gap-3">
-            <span className="text-4xl opacity-50">📂</span> 
-            RAW GRAPH CONTEXT
-            <span className="text-[10px] font-mono tracking-widest ml-auto opacity-50 uppercase border border-[#38bdf8]/30 px-2 py-1 rounded">What Cognee fed to the LLM</span>
+        <div className="flex-1 border-r border-black/[0.08] p-8 flex flex-col relative overflow-hidden">
+          <h2 className="text-xl font-medium tracking-[-0.01em] text-black/60 mb-6 flex items-center gap-3" style={{ fontFamily: "var(--font-geist)" }}>
+            <span className="text-2xl opacity-60">📂</span>
+            Raw graph context
+            <span className="text-[11px] font-mono tracking-widest ml-auto uppercase text-black/35 border border-black/[0.08] px-2 py-1 rounded-full">What Cognee fed the LLM</span>
           </h2>
-          <div className="bg-[#2C1F0E]/20 p-6 rounded-sm flex-1 border border-[#2C1F0E]/40 relative font-mono text-xs text-[#38bdf8]/70 whitespace-pre-wrap overflow-y-auto">
+          <div className="bg-white p-6 rounded-lg flex-1 border border-black/[0.08] relative font-mono text-xs text-black/55 whitespace-pre-wrap overflow-y-auto">
             {rawContext ? (
                rawContext
             ) : (
-               <div className="flex items-center gap-3 text-[#38bdf8]/50 h-full justify-center">
+               <div className="flex items-center gap-3 text-black/35 h-full justify-center">
                  <Loader2 className="w-5 h-5 animate-spin" />
                  <span>Fetching context...</span>
                </div>
@@ -260,24 +257,24 @@ function AskPageContent() {
 
         {/* Right Panel: Graph */}
         <div className="flex-[1.2] p-8 flex flex-col relative overflow-hidden">
-          <h2 className="font-heading text-3xl text-[#F5C842] mb-6 flex items-center gap-3">
-            <span className="text-4xl">🧠</span> 
-            HINDSIGHT
-            <span className="text-xs font-mono tracking-widest ml-auto text-[#F5C842] border border-[#F5C842]/30 px-2 py-1 rounded">Graph Completion</span>
+          <h2 className="text-xl font-medium tracking-[-0.01em] text-[#0d0d0d] mb-6 flex items-center gap-3" style={{ fontFamily: "var(--font-geist)" }}>
+            <span className="text-2xl">🧠</span>
+            Chow
+            <span className="text-[11px] font-mono tracking-widest ml-auto text-black/60 border border-black/[0.1] px-2 py-1 rounded-full">Graph completion</span>
           </h2>
 
-          <div className="bg-[#0D0D0D]/80 p-8 rounded-sm flex-1 border-2 border-[#F5C842]/50 shadow-[0_0_30px_rgba(245,200,66,0.1)] relative flex flex-col overflow-y-auto">
+          <div className="bg-white p-8 rounded-lg flex-1 border border-black/[0.12] shadow-[0_1px_2px_rgba(0,0,0,0.04)] relative flex flex-col overflow-y-auto">
             {graphAnswer ? (
               <>
                 {searchMode === 'TEMPORAL' ? (
                   <TemporalTimeline answerText={graphAnswer} />
                 ) : (
                   <>
-                    <motion.p 
+                    <motion.p
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.5 }}
-                      className="text-[#F5EDD4] font-body text-xl leading-relaxed mb-auto"
+                      className="text-[#0d0d0d] text-xl leading-relaxed mb-auto"
                     >
                       {renderMarkdown(graphAnswer)}
                     </motion.p>
@@ -286,7 +283,7 @@ function AskPageContent() {
                 )}
               </>
             ) : (
-              <div className="flex items-center gap-3 text-[#F5C842] h-full justify-center">
+              <div className="flex items-center gap-3 text-black/50 h-full justify-center">
                 <Loader2 className="w-6 h-6 animate-spin" />
                 <span className="font-mono">Traversing graph relationships...</span>
               </div>
@@ -322,7 +319,7 @@ function AskPageContent() {
                   ease: "easeOut"
                 }}
                 className="absolute text-3xl drop-shadow-md"
-                style={{ color: ['#F5C842', '#C0392B', '#FFFFFF', '#000000'][Math.floor(Math.random() * 4)] }}
+                style={{ color: ['#f35918', '#C0392B', '#929c05', '#0d0d0d'][Math.floor(Math.random() * 4)] }}
               >
                 {['♠', '♥', '♦', '♣'][Math.floor(Math.random() * 4)]}
               </motion.div>
@@ -337,8 +334,8 @@ function AskPageContent() {
 export default function AskPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#1A1108] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#F5C842] animate-spin" />
+      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-black/40 animate-spin" />
       </div>
     }>
       <AskPageContent />

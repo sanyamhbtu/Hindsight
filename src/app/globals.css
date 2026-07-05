@@ -7,22 +7,22 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-inter-tight);
   --font-mono: var(--font-jetbrains-mono);
-  --font-heading: var(--font-bebas-neue);
-  
-  /* Hindsight Hangover Theme */
-  --color-bourbon: #1A1108;
-  --color-gold: #F5C842;
-  --color-danger: #C0392B;
-  --color-card-brown: #2C1F0E;
-  --color-muted-gold: #8B6914;
-  --color-parchment: #F0E6CC;
-  --color-cork: #8B6646;
-  --color-near-black: #0D0D0D;
+  --font-heading: var(--font-geist);
 
-  --font-display: var(--font-bebas-neue), var(--font-sans);
-  --font-body: var(--font-inter), var(--font-sans);
+  /* Chow — accent palette (used sparingly against black/white/gray) */
+  --color-bourbon: #0d0d0d;
+  --color-gold: #f35918;
+  --color-danger: #c0392b;
+  --color-card-brown: #ebebeb;
+  --color-muted-gold: #8a8a8a;
+  --color-parchment: #0d0d0d;
+  --color-cork: #929c05;
+  --color-near-black: #0d0d0d;
+
+  --font-display: var(--font-geist), var(--font-sans);
+  --font-body: var(--font-inter-tight), var(--font-sans);
   --font-monospace: var(--font-jetbrains-mono), var(--font-mono);
 
   --color-sidebar-ring: var(--sidebar-ring);
@@ -137,7 +137,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-bourbon text-parchment antialiased;
+    @apply bg-[#fafafa] text-[#0d0d0d] antialiased;
   }
   html {
     @apply font-body;

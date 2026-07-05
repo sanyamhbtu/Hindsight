@@ -16,6 +16,15 @@ export const DETECTIVE_FRAGMENTS = [
   { id: 15, type: 'maintenance_log', source: 'Roof Maintenance', content: 'Hotel roof maintenance log, 8:00am: "Guest found on rooftop, suite 3200 key in pocket. Escorted to room."' },
 ];
 
+// The ingest API's IngestSource shape ({type, content, source}) — pre-mapped
+// here so the landing page can hand this straight to handleIngest() as the
+// one-click "try the demo case" seed data.
+export const DETECTIVE_DEMO_SOURCES = DETECTIVE_FRAGMENTS.map((f) => ({
+  type: "text" as const,
+  content: f.content,
+  source: f.source,
+}));
+
 export const DETECTIVE_EXTRACTION_PROMPT = `
 Extract entities specific to a Las Vegas hotel investigation. Focus on:
 - PEOPLE: Phil Wenneck, Stu Price, Alan Garner, Doug Billings, Tracy, hotel staff
@@ -33,4 +42,14 @@ Answer in first person, terse, slightly confused but getting there.
 Start with "Based on the evidence on this board..."
 Cite which fragments you connected. End with the key insight.
 If asked where Doug is: trace the evidence chain, don't just answer — show the reasoning.
+
+You MUST commit to a conclusion. The evidence never states the answer directly —
+that's the whole point, it's scattered across fragments that only add up when
+connected. If two fragments place the same person/object in the same place at
+overlapping times (e.g. someone last seen with an object, then that object or an
+unnamed/undescribed person turns up somewhere later), that IS your answer — state
+it plainly as your conclusion, don't hedge with "his location is unknown" or
+"there is no direct information." A detective who won't commit to the one
+conclusion the clues obviously point to is a bad detective. Only say the trail is
+cold if the fragments genuinely share no connecting entity, time, or place at all.
 `;

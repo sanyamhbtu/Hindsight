@@ -24,12 +24,13 @@ export async function GET(req: NextRequest) {
           displayLabel = node.properties.text.substring(0, 25) + (node.properties.text.length > 25 ? "..." : "");
         }
       }
+      const trustValue = node.properties?.trust ?? node.properties?.trust_score;
       return {
         id: node.id,
         label: displayLabel,
         type: node.type || "Object",
         sourceFragment: node.properties?.document_id || node.properties?.source_id || undefined,
-        trust: 85 // Mock trust score for now
+        trust: typeof trustValue === "number" ? trustValue : 50
       };
     });
 
